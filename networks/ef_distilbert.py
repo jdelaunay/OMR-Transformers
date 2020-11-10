@@ -7,7 +7,9 @@ from tensorflow.keras.layers import (
     Conv2D,
     Dense,
     Flatten,
-    TimeDistributed
+    TimeDistributed,
+    Bidirectional,
+    LSTM,
 )
 import transformers
 
@@ -23,11 +25,11 @@ def build_head(inputs, backbone, n_classes, name):
     Returns:
         (tf.keras.Model): the Model
     """
-    config = transformers.DistilBertConfig(vocab_size=n_classes)
-    distil_bert = transformers.TFDistilBertModel(config)(backbone)
+    blstm_1 = Bidirectional(LSTM(params["lstm_size"], return_sequences=True, dropout=0.5))(backbone)
+    blstm_2 = Bidirectional(LSTM(params["lstm_size"], return_sequences=True, dropout=0.5))(blstm_1)
     dense = TimeDistributed(
-        Dense(n_classes, activation="softmax")
-    )(distil_bert)
+        Dense(n_classes+1, activation="softmax")
+    )(blstm_2)
     return CTCModel([inputs], [dense], name=name)
 
 
