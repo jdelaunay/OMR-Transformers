@@ -35,14 +35,13 @@ def train(params):
     # Load modules
     networks_module = importlib.import_module(f"networks.{params['model']}")
     metrics_module = importlib.import_module("metrics")
-    loss_module = importlib.import_module("loss")
 
     # Create the train, val and test datasets
 
     # Load the network
     model = getattr(networks_module, MODEL_FUNC)(params)
     model.compile(
-        loss=getattr(loss_module, "get_loss")(),
+        loss=['categorical_crossentropy'],
         optimizer=tf.keras.optimizers.Adam(lr=params["learning_rate"]),
         metrics=getattr(metrics_module, "get_metrics")()
     )
