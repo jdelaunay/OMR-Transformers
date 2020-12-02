@@ -7,6 +7,8 @@ from os import makedirs
 import tensorflow as tf
 import tensorflow.keras.callbacks as cb
 
+from data import DataGenerator
+
 MODEL_FUNC = "get_model"
 
 
@@ -37,11 +39,23 @@ def train(params):
     metrics_module = importlib.import_module("metrics")
 
     # Create the train, val and test datasets
+    train_generator = DataGenerator(params["train_data_path"],
+                                          "train",
+                                          batch_size = params["batch_size"],
+                                          aug_rate = 0.25
+                                         )
+    valid_generator = DataGenerator(params["val_data_path"],
+                                          "validation",
+                                          batch_size = params["batch_size"],
+                                          aug_rate = 0.25
+                                         )
 
     # Load the network
     model = getattr(networks_module, MODEL_FUNC)(params)
     model.compile(
-        loss=['categorical_crossentropy'],
+        loss={'output_notes': 'categorical_crossentropy',
+              'output_octaves': 'categorical_crossentropy',
+              'output_rythms': 'categorical_crossentropy'},
         optimizer=tf.keras.optimizers.Adam(lr=params["learning_rate"]),
         metrics=getattr(metrics_module, "get_metrics")()
     )
